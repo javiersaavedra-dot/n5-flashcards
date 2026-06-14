@@ -1,5 +1,5 @@
 /* Service worker — cache-first para uso offline */
-const CACHE = "n5-flashcards-v1";
+const CACHE = "n5-flashcards-v2";
 const ASSETS = [
   "./",
   "./index.html",

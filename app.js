@@ -203,7 +203,8 @@ function mark(asKnown) {
     render();
   } else {
     render();
-    if (asKnown) setTimeout(() => go(1), 420); // avanza tras el sello
+    // avanza a la siguiente tarjeta: tras el sello si la sé, enseguida si es para repasar
+    setTimeout(() => go(1), asKnown ? 420 : 200);
   }
 }
 

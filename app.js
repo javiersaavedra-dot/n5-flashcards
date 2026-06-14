@@ -71,10 +71,16 @@ function saveKnown(deck) {
 function cardId(deck, idx) { return DECKS[deck].data[idx].k; }
 
 /* ---------- Construcción del orden ---------- */
-function buildOrder(preserveCurrentId) {
+function buildOrder(preserveCurrentId, doShuffle) {
   const { data } = DECKS[state.deck];
   let idxs = data.map((_, i) => i);
   if (state.reviewOnly) idxs = idxs.filter(i => !known[state.deck].has(cardId(state.deck, i)));
+  if (doShuffle) {
+    for (let i = idxs.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [idxs[i], idxs[j]] = [idxs[j], idxs[i]];
+    }
+  }
   state.order = idxs;
   // intenta mantener la tarjeta visible
   if (preserveCurrentId) {
@@ -117,6 +123,12 @@ function render() {
   $("#count").textContent = state.order.length
     ? `${state.pos + 1} / ${state.order.length}  ·  ✓${knownCount}/${total}`
     : `✓${knownCount}/${total}`;
+
+  // botón de filtro: muestra cuántas quedan por repasar
+  const remaining = total - knownCount;
+  const fb = $("#filter");
+  fb.textContent = (state.reviewOnly ? "● Por repasar" : "Por repasar") + ` (${remaining})`;
+  fb.classList.toggle("active", state.reviewOnly);
 
   if (!card) {
     stage.innerHTML = `<div class="empty"><b>済</b>¡Nada por repasar!<br><small>Todas marcadas como aprendidas.</small></div>`;
@@ -213,16 +225,14 @@ function setDeck(deck) {
   state.deck = deck;
   state.flipped = false;
   document.querySelectorAll("#deckToggle button").forEach(b => b.classList.toggle("active", b.dataset.deck === deck));
-  buildOrder();
+  buildOrder(null, true);
   render();
 }
 
 function toggleFilter() {
   const card = currentCard();
   state.reviewOnly = !state.reviewOnly;
-  $("#filter").classList.toggle("active", state.reviewOnly);
-  $("#filter").textContent = state.reviewOnly ? "● Por repasar" : "Por repasar";
-  buildOrder(card ? card.k : null);
+  buildOrder(card ? card.k : null, true);
   state.flipped = false;
   render();
 }
@@ -253,7 +263,7 @@ stage.addEventListener("touchend", e => {
 }, { passive: true });
 
 /* ---------- Init ---------- */
-buildOrder();
+buildOrder(null, true);
 render();
 
 /* service worker para uso offline */

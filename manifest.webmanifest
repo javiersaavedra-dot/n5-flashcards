@@ -1,0 +1,16 @@
+{
+  "name": "N5 Flashcards · 漢字・動詞",
+  "short_name": "N5",
+  "description": "Flashcards de Kanji y Verbos JLPT N5",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#efe7d6",
+  "theme_color": "#1b1a17",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

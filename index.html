@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#1b1a17" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="N5" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-180.png" />
+<title>N5 五十音 · Flashcards</title>
+<style>
+  :root{
+    --washi:#efe7d6; --washi2:#e6dcc6; --ink:#1b1a17; --ink-soft:#3f3a31;
+    --line:#cdbf9f; --paper:#f7f1e3; --hanko:#b3331f; --gold:#9a7b3f;
+    --good:#3f6b4d; --review:#a86a2c; --shadow:rgba(40,30,15,.18);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Mincho ProN","Yu Mincho",serif;
+    background:var(--washi);
+    background-image:
+      radial-gradient(circle at 18% 12%, rgba(255,255,255,.45), transparent 38%),
+      radial-gradient(circle at 82% 88%, rgba(180,160,120,.22), transparent 42%);
+    color:var(--ink);
+    display:flex; flex-direction:column; min-height:100%;
+    overflow:hidden;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .app{display:flex; flex-direction:column; flex:1; max-width:560px; width:100%; margin:0 auto; padding:14px 16px 18px;}
+
+  /* ---- Top bar ---- */
+  header{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+  .brand{font-size:15px; letter-spacing:.18em; color:var(--ink-soft); font-weight:600;}
+  .brand b{color:var(--hanko);}
+  .spacer{flex:1;}
+  .deck-toggle{display:flex; background:var(--paper); border:1px solid var(--line); border-radius:999px; padding:3px; box-shadow:0 1px 0 #fff inset;}
+  .deck-toggle button{
+    border:0; background:transparent; font:inherit; font-size:13px; font-weight:600;
+    color:var(--ink-soft); padding:7px 14px; border-radius:999px; cursor:pointer; transition:.2s;
+  }
+  .deck-toggle button.active{background:var(--ink); color:var(--paper);}
+
+  /* ---- Progress ---- */
+  .meta{display:flex; align-items:center; gap:10px; margin:4px 2px 12px; font-size:12.5px; color:var(--ink-soft);}
+  .bar{flex:1; height:7px; background:var(--washi2); border:1px solid var(--line); border-radius:999px; overflow:hidden;}
+  .bar > i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--good),#5a8a68); transition:width .4s ease;}
+  .count{font-variant-numeric:tabular-nums; white-space:nowrap;}
+
+  /* ---- Card ---- */
+  .stage{flex:1; display:flex; align-items:center; justify-content:center; perspective:1400px; min-height:0;}
+  .card{
+    position:relative; width:100%; max-width:430px; aspect-ratio:3/4; max-height:62vh;
+    cursor:pointer; transform-style:preserve-3d; transition:transform .5s cubic-bezier(.2,.7,.2,1);
+  }
+  .card.flipped{transform:rotateY(180deg);}
+  .face{
+    position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+    background:var(--paper); border:1px solid var(--line); border-radius:18px;
+    box-shadow:0 14px 30px var(--shadow), 0 2px 0 #fff inset;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:22px; overflow:hidden;
+  }
+  .face::before{ /* marco interior */
+    content:""; position:absolute; inset:12px; border:1px solid var(--line); border-radius:11px; opacity:.6; pointer-events:none;
+  }
+  .face.back{transform:rotateY(180deg);}
+  .corner{position:absolute; top:14px; font-size:11px; letter-spacing:.22em; color:var(--gold); text-transform:uppercase;}
+  .corner.l{left:18px;} .corner.r{right:18px;}
+
+  .glyph{font-size:clamp(90px,30vw,170px); line-height:1; color:var(--ink); text-shadow:0 2px 1px rgba(0,0,0,.06);}
+  .hint{position:absolute; bottom:16px; font-size:12px; color:var(--gold); letter-spacing:.08em;}
+
+  /* back content */
+  .reading-jp{font-size:clamp(30px,9vw,46px); color:var(--ink); margin-bottom:6px;}
+  .reading-sub{font-size:14px; color:var(--ink-soft); letter-spacing:.05em; margin-bottom:14px;}
+  .rows{width:100%; max-width:300px;}
+  .row{display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px dashed var(--line); font-size:15px;}
+  .row:last-child{border-bottom:0;}
+  .row .lab{color:var(--gold); font-size:12px; letter-spacing:.1em; align-self:center; text-transform:uppercase;}
+  .row .val{text-align:right; color:var(--ink); font-weight:600;}
+  .row .val .kana{display:block; font-size:12px; color:var(--ink-soft); font-weight:400;}
+  .mean{font-size:clamp(20px,6vw,26px); color:var(--ink); text-align:center; font-weight:600; margin-bottom:4px;}
+  .tag{display:inline-block; margin-top:4px; font-size:11px; letter-spacing:.12em; color:var(--paper); background:var(--ink-soft); padding:3px 10px; border-radius:999px;}
+
+  /* hanko stamp */
+  .stamp{
+    position:absolute; top:18px; right:18px; width:62px; height:62px; border:3px solid var(--hanko);
+    border-radius:10px; color:var(--hanko); display:flex; align-items:center; justify-content:center;
+    font-size:34px; transform:rotate(-12deg) scale(.4); opacity:0; transition:.35s cubic-bezier(.2,1.4,.4,1);
+    pointer-events:none; font-family:"Hiragino Mincho ProN",serif; z-index:3;
+  }
+  .card.known .stamp{opacity:.92; transform:rotate(-12deg) scale(1);}
+
+  /* ---- Controls ---- */
+  .controls{display:flex; flex-direction:column; gap:12px; margin-top:14px;}
+  .judge{display:flex; gap:12px;}
+  .judge button{
+    flex:1; font:inherit; font-size:16px; font-weight:600; padding:15px 0; border-radius:14px; cursor:pointer;
+    border:1px solid var(--line); background:var(--paper); color:var(--ink); transition:.15s; box-shadow:0 2px 0 #fff inset;
+  }
+  .judge button:active{transform:translateY(1px);}
+  .judge .know{border-color:var(--good); color:var(--good);}
+  .judge .know.on{background:var(--good); color:var(--paper);}
+  .judge .rev{border-color:var(--review); color:var(--review);}
+  .judge .rev.on{background:var(--review); color:var(--paper);}
+
+  .nav{display:flex; align-items:center; gap:10px;}
+  .nav button{
+    font:inherit; font-size:15px; padding:11px 16px; border-radius:12px; cursor:pointer;
+    border:1px solid var(--line); background:var(--washi2); color:var(--ink-soft);
+  }
+  .nav button:active{transform:translateY(1px);}
+  .nav .arrow{font-size:18px; min-width:52px;}
+  .nav .tool{flex:1; font-size:13px; letter-spacing:.04em;}
+  .nav .tool.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+
+  .empty{text-align:center; color:var(--ink-soft); padding:40px 20px;}
+  .empty b{display:block; font-size:42px; color:var(--good); margin-bottom:10px;}
+
+  @media (prefers-reduced-motion: reduce){
+    .card,.stamp,.bar>i{transition:none;}
+  }
+  @media (max-height:680px){
+    .card{max-height:54vh;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><b>済</b> N5 · FLASHCARDS</div>
+    <div class="spacer"></div>
+    <div class="deck-toggle" id="deckToggle">
+      <button data-deck="kanji" class="active">漢字</button>
+      <button data-deck="verbs">動詞</button>
+    </div>
+  </header>
+
+  <div class="meta">
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="count" id="count">0 / 0</div>
+  </div>
+
+  <div class="stage" id="stage"></div>
+
+  <div class="controls">
+    <div class="judge">
+      <button class="rev" id="btnReview">↻ Repasar (J)</button>
+      <button class="know" id="btnKnow">✓ Lo sé (K)</button>
+    </div>
+    <div class="nav">
+      <button class="arrow" id="prev">←</button>
+      <button class="tool" id="filter">Por repasar</button>
+      <button class="tool" id="shuffle">Mezclar</button>
+      <button class="arrow" id="next">→</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -172,6 +172,7 @@ function verbCard(c) {
     <div class="face front">
       <span class="corner l">動詞</span><span class="corner r">N5</span>
       <div class="glyph" style="font-size:clamp(54px,16vw,96px)">${c.k}</div>
+      ${c.k !== c.r ? `<div class="reading-front">${c.r}</div>` : ""}
       <div class="hint">toca para conjugar</div>
     </div>
     <div class="face back">

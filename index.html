@@ -32,22 +32,28 @@
   .app{display:flex; flex-direction:column; flex:1; max-width:560px; width:100%; margin:0 auto; padding:14px 16px 18px;}
 
   /* ---- Top bar ---- */
-  header{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+  header{display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap;}
   .brand{font-size:15px; letter-spacing:.18em; color:var(--ink-soft); font-weight:600;}
   .brand b{color:var(--hanko);}
   .spacer{flex:1;}
   .deck-toggle{display:flex; background:var(--paper); border:1px solid var(--line); border-radius:999px; padding:3px; box-shadow:0 1px 0 #fff inset;}
   .deck-toggle button{
-    border:0; background:transparent; font:inherit; font-size:13px; font-weight:600;
-    color:var(--ink-soft); padding:7px 14px; border-radius:999px; cursor:pointer; transition:.2s;
+    border:0; background:transparent; font:inherit; font-size:12px; font-weight:600;
+    color:var(--ink-soft); padding:6px 11px; border-radius:999px; cursor:pointer; transition:.2s;
   }
   .deck-toggle button.active{background:var(--ink); color:var(--paper);}
 
-  /* ---- Progress ---- */
+  /* ---- Progress + streak ---- */
   .meta{display:flex; align-items:center; gap:10px; margin:4px 2px 12px; font-size:12.5px; color:var(--ink-soft);}
   .bar{flex:1; height:7px; background:var(--washi2); border:1px solid var(--line); border-radius:999px; overflow:hidden;}
   .bar > i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--good),#5a8a68); transition:width .4s ease;}
   .count{font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .streak{
+    font-size:12px; font-weight:700; color:var(--hanko); white-space:nowrap;
+    opacity:0; transform:scale(.8); transition:.3s cubic-bezier(.2,1.4,.4,1);
+    display:flex; align-items:center; gap:2px;
+  }
+  .streak.visible{opacity:1; transform:scale(1);}
 
   /* ---- Card ---- */
   .stage{flex:1; display:flex; align-items:center; justify-content:center; perspective:1400px; min-height:0;}
@@ -63,7 +69,7 @@
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     padding:22px; overflow:hidden;
   }
-  .face::before{ /* marco interior */
+  .face::before{
     content:""; position:absolute; inset:12px; border:1px solid var(--line); border-radius:11px; opacity:.6; pointer-events:none;
   }
   .face.back{transform:rotateY(180deg);}
@@ -73,6 +79,8 @@
   .glyph{font-size:clamp(90px,30vw,170px); line-height:1; color:var(--ink); text-shadow:0 2px 1px rgba(0,0,0,.06);}
   .hint{position:absolute; bottom:16px; font-size:12px; color:var(--gold); letter-spacing:.08em;}
   .reading-front{font-size:clamp(20px,6.5vw,30px); color:var(--ink-soft); letter-spacing:.05em; margin-top:14px;}
+  .meaning-front{font-size:clamp(28px,8vw,44px); color:var(--ink); font-weight:700; text-align:center; line-height:1.2;}
+  .sub-front{font-size:13px; color:var(--gold); letter-spacing:.1em; margin-top:10px; text-transform:uppercase;}
 
   /* back content */
   .reading-jp{font-size:clamp(30px,9vw,46px); color:var(--ink); margin-bottom:6px;}
@@ -85,6 +93,8 @@
   .row .val .kana{display:block; font-size:12px; color:var(--ink-soft); font-weight:400;}
   .mean{font-size:clamp(20px,6vw,26px); color:var(--ink); text-align:center; font-weight:600; margin-bottom:4px;}
   .tag{display:inline-block; margin-top:4px; font-size:11px; letter-spacing:.12em; color:var(--paper); background:var(--ink-soft); padding:3px 10px; border-radius:999px;}
+  .tag.i-tag{background:#4a6fa5;}
+  .tag.na-tag{background:#6b4a8f;}
 
   /* hanko stamp */
   .stamp{
@@ -96,7 +106,7 @@
   .card.known .stamp{opacity:.92; transform:rotate(-12deg) scale(1);}
 
   /* ---- Controls ---- */
-  .controls{display:flex; flex-direction:column; gap:12px; margin-top:14px;}
+  .controls{display:flex; flex-direction:column; gap:10px; margin-top:14px;}
   .judge{display:flex; gap:12px;}
   .judge button{
     flex:1; font:inherit; font-size:16px; font-weight:600; padding:15px 0; border-radius:14px; cursor:pointer;
@@ -108,21 +118,99 @@
   .judge .rev{border-color:var(--review); color:var(--review);}
   .judge .rev.on{background:var(--review); color:var(--paper);}
 
-  .nav{display:flex; align-items:center; gap:10px;}
+  .nav{display:flex; align-items:center; gap:8px;}
   .nav button{
-    font:inherit; font-size:15px; padding:11px 16px; border-radius:12px; cursor:pointer;
+    font:inherit; font-size:14px; padding:10px 12px; border-radius:12px; cursor:pointer;
     border:1px solid var(--line); background:var(--washi2); color:var(--ink-soft);
+    transition:.15s;
   }
   .nav button:active{transform:translateY(1px);}
-  .nav .arrow{font-size:18px; min-width:52px;}
-  .nav .tool{flex:1; font-size:13px; letter-spacing:.04em;}
+  .nav .arrow{font-size:18px; min-width:46px; flex-shrink:0;}
+  .nav .tool{flex:1; font-size:12px; letter-spacing:.03em; min-width:0;}
   .nav .tool.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  .nav .tool.reverse-btn.active{background:#4a6fa5; border-color:#4a6fa5; color:#fff;}
+  .nav .tool.exam-btn.active{background:#6b4a8f; border-color:#6b4a8f; color:#fff;}
+
+  /* ---- Modo examen ---- */
+  .exam-score{
+    font-size:12.5px; color:var(--ink-soft); text-align:center;
+    padding:4px 0 2px; display:none; gap:16px; justify-content:center;
+    font-variant-numeric:tabular-nums;
+  }
+  .exam-score.visible{display:flex;}
+  .exam-score .es-ok{color:var(--good); font-weight:700;}
+  .exam-score .es-err{color:var(--review); font-weight:700;}
+
+  .choices{display:none; grid-template-columns:1fr 1fr; gap:10px;}
+  .choices.visible{display:grid;}
+  .choice-btn{
+    font:inherit; font-size:14px; font-weight:600;
+    padding:13px 10px; border-radius:14px; cursor:pointer; text-align:center;
+    border:1px solid var(--line); background:var(--paper); color:var(--ink);
+    transition:.15s; line-height:1.3; box-shadow:0 2px 0 #fff inset;
+  }
+  .choice-btn:active:not(:disabled){transform:translateY(1px);}
+  .choice-btn:disabled{cursor:default; opacity:.7;}
+  .choice-btn.correct{background:var(--good); border-color:var(--good); color:#fff; box-shadow:none;}
+  .choice-btn.wrong{background:var(--review); border-color:var(--review); color:#fff; box-shadow:none;}
+  .choice-btn.reveal{background:var(--good); border-color:var(--good); color:#fff; box-shadow:none; opacity:1 !important;}
 
   .empty{text-align:center; color:var(--ink-soft); padding:40px 20px;}
   .empty b{display:block; font-size:42px; color:var(--good); margin-bottom:10px;}
 
+  /* ---- Success overlay ---- */
+  .success-overlay{
+    position:fixed; inset:0; z-index:100;
+    background:rgba(27,26,23,.85);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity .4s;
+    overflow:hidden;
+  }
+  .success-overlay.visible{opacity:1; pointer-events:all;}
+  .success-stamp{
+    font-family:"Hiragino Mincho ProN",serif;
+    font-size:clamp(80px,22vw,140px); color:var(--hanko);
+    border:6px solid var(--hanko); border-radius:18px;
+    width:clamp(160px,44vw,240px); height:clamp(160px,44vw,240px);
+    display:flex; align-items:center; justify-content:center;
+    transform:scale(0) rotate(-15deg); transition:.6s cubic-bezier(.2,1.4,.3,1);
+    text-shadow:0 4px 12px rgba(179,51,31,.4);
+  }
+  .success-overlay.visible .success-stamp{transform:scale(1) rotate(-8deg);}
+  .success-title{
+    color:#efe7d6; font-size:clamp(22px,6vw,32px); font-weight:700;
+    margin-top:28px; letter-spacing:.06em;
+    opacity:0; transform:translateY(16px); transition:.5s .3s;
+  }
+  .success-overlay.visible .success-title{opacity:1; transform:translateY(0);}
+  .success-sub{
+    color:#cdbf9f; font-size:14px; margin-top:8px; letter-spacing:.04em;
+    opacity:0; transition:.5s .45s;
+  }
+  .success-overlay.visible .success-sub{opacity:1;}
+  .success-btn{
+    margin-top:32px; font:inherit; font-size:15px; font-weight:600;
+    padding:14px 36px; border-radius:14px; border:2px solid var(--hanko);
+    background:transparent; color:var(--hanko); cursor:pointer;
+    opacity:0; transform:translateY(12px); transition:.5s .6s;
+    letter-spacing:.06em;
+  }
+  .success-overlay.visible .success-btn{opacity:1; transform:translateY(0);}
+  .success-btn:active{background:var(--hanko); color:#fff;}
+  .confetti-wrap{position:absolute; inset:0; pointer-events:none; overflow:hidden;}
+  .cp{
+    position:absolute; top:-12px; border-radius:2px;
+    animation:fall linear forwards;
+  }
+  @keyframes fall{
+    0%  {transform:translateY(0) rotate(0deg);   opacity:1;}
+    80% {opacity:1;}
+    100%{transform:translateY(105vh) rotate(720deg); opacity:0;}
+  }
+
   @media (prefers-reduced-motion: reduce){
-    .card,.stamp,.bar>i{transition:none;}
+    .card,.stamp,.bar>i,.success-stamp,.success-title,.success-sub,.success-btn{transition:none;}
+    .cp{animation:none; display:none;}
   }
   @media (max-height:680px){
     .card{max-height:54vh;}
@@ -135,30 +223,52 @@
     <div class="brand"><b>済</b> N5 · FLASHCARDS</div>
     <div class="spacer"></div>
     <div class="deck-toggle" id="deckToggle">
-      <button data-deck="kanji" class="active">漢字</button>
-      <button data-deck="verbs">動詞</button>
+      <button data-deck="kanji"  class="active">Kanjis</button>
+      <button data-deck="verbs">Verbos</button>
+      <button data-deck="adjectives">Adjetivos</button>
     </div>
   </header>
 
   <div class="meta">
     <div class="bar"><i id="barFill"></i></div>
     <div class="count" id="count">0 / 0</div>
+    <div class="streak" id="streak">🔥<span id="streakNum">0</span></div>
   </div>
 
   <div class="stage" id="stage"></div>
 
   <div class="controls">
-    <div class="judge">
+    <div class="exam-score" id="examScore">
+      <span>🎯 Examen:</span>
+      <span class="es-ok" id="esOk">0 ✓</span>
+      <span class="es-err" id="esErr">0 ✗</span>
+      <span id="esPct">(0%)</span>
+    </div>
+    <div class="judge" id="judgeRow">
       <button class="rev" id="btnReview">↻ Repasar (J)</button>
       <button class="know" id="btnKnow">✓ Lo sé (K)</button>
     </div>
+    <div class="choices" id="choicesRow"></div>
     <div class="nav">
       <button class="arrow" id="prev">←</button>
       <button class="tool" id="filter">Por repasar</button>
+      <button class="tool reverse-btn" id="reverse">⇄ Invertir</button>
       <button class="tool" id="shuffle">Mezclar</button>
       <button class="arrow" id="next">→</button>
     </div>
+    <div class="nav" style="margin-top:-2px">
+      <button class="tool exam-btn" id="examToggle">📝 Modo Examen</button>
+    </div>
   </div>
+</div>
+
+<!-- Success overlay -->
+<div class="success-overlay" id="successOverlay">
+  <div class="confetti-wrap" id="confettiWrap"></div>
+  <div class="success-stamp">済</div>
+  <div class="success-title">¡Mazo completado!</div>
+  <div class="success-sub" id="successSub"></div>
+  <button class="success-btn" id="successBtn">Seguir repasando</button>
 </div>
 
 <script src="data.js"></script>
